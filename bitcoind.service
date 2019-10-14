@@ -1,0 +1,60 @@
+[Unit]
+Description=Bitcoin daemon
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/bitcoind -server \
+                            -datadir=/opt/bitcoin/data \
+                            -txindex \
+                            -zmqpubhashtx=tcp://127.0.0.1:38330 \
+                            -zmqpubhashblock=tcp://127.0.0.1:38330 -maxmempool=2000 \
+                            -dbcache=1000 \
+                            -rpcauth=rpc:b2c274ee22b5a451abdfad965c6a9d1e$daa9cd342950d87d28cf22ac1d12cf93e84727627eba1ad7dda092f7c2321d8f \
+                            -rpcport=8030
+
+# Make sure the config directory is readable by the service user
+PermissionsStartOnly=true
+ExecStartPre=/bin/chgrp bitcoin /opt/bitcoin
+
+# Process management
+####################
+
+Restart=on-failure
+TimeoutStopSec=600
+
+# Directory creation and permissions
+####################################
+
+# Run as bitcoin:bitcoin
+User=bitcoin
+Group=bitcoin
+
+# /run/bitcoind
+RuntimeDirectory=bitcoind
+RuntimeDirectoryMode=0710
+
+# Hardening measures
+####################
+
+# Provide a private /tmp and /var/tmp.
+PrivateTmp=true
+
+# Mount /usr, /boot/ and /etc read-only for the process.
+ProtectSystem=full
+
+# Deny access to /home, /root and /run/user
+ProtectHome=true
+
+# Disallow the process and all of its children to gain
+# new privileges through execve().
+NoNewPrivileges=true
+
+# Use a new /dev namespace only populated with API pseudo devices
+# such as /dev/null, /dev/zero and /dev/random.
+PrivateDevices=true
+
+# Deny the creation of writable and executable memory mappings.
+MemoryDenyWriteExecute=true
+
+[Install]
+WantedBy=multi-user.target
